@@ -1,0 +1,41 @@
+input{
+file{
+path => "/home/vagrant/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv"
+start_position => "beginning"
+sincedb_path => "/dev/null"
+}
+}
+filter{
+csv{
+separator => ","
+remove_field => ["message"]
+columns => ["FIPS", "Admin2", "Province_State", "Country_Region", "Last_Update", "Lat", "Long_", "Confirmed", "Deaths", "Recovered", "Active", "Combined_Key"]
+}
+date {
+        match => ["Last_Update", "ISO8601"]
+    }
+
+mutate {
+    convert => {
+          "FIPS" => "string"
+          "Admin2" => "string"
+                  "Province_State" => "string"
+                  "Country_Region" => "string"
+                  "Lat" => "string"
+                  "Long_" => "string"
+                  "Confirmed" => "integer"
+                  "Deaths" => "integer"
+                  "Recovered" => "integer"
+                  "Active" => "integer"
+                  "Combined_Key" => "integer"
+        }
+
+        }
+
+}
+output {
+  elasticsearch {
+    hosts => "http://192.168.3.23:9200"
+    index => "covid-date-%{+YYYY.MM.dd}"
+  }
+}
